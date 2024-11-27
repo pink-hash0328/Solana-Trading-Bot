@@ -19,7 +19,7 @@ pip install requirements.txt
 ``` 
 
 ## Recommendations 
-You can trade with code in the WrapSol__priorityfees folder. Wrap your sol first and a certain amout of sol to pay for gas fees.
+You can trade with code in the WrapSol__priorityfees folder. Wrap your sol first and leave a certain amout of sol to pay for gas fees.
 
 ## 💰 Support My Work
 If these scripts have helped you, please consider supporting my work. Your support will help me continue to develop these tools and create more useful resources for the crypto community.
