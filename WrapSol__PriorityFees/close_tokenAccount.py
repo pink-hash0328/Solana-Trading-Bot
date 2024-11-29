@@ -59,7 +59,7 @@ async def main():
                                                             program_id=TOKEN_PROGRAM_ID)
                   transaction = Transaction()
 
-                  transaction.add(close_account(close_account_params), set_compute_unit_price(25_232), set_compute_unit_limit(200_337))
+                  transaction.add(close_account(close_account_params), set_compute_unit_price(498_750), set_compute_unit_limit(4_000_000))
                   burn_instruction.extend([burn_inst,transaction.instructions[0],transaction.instructions[1],transaction.instructions[2]])
 
                   block_hash = solana_client.get_latest_blockhash(commitment=Finalized)
