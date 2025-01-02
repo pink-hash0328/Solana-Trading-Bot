@@ -22,7 +22,7 @@ pip install requirements.txt
 You can trade with code in the WrapSol__priorityfees folder. Wrap your sol first and leave a certain amout of sol to pay for gas fees.
 
 ## ⚠️ Crypto Trading Warning
-Crypto trading can easily turn into uncontrollable gambling—stay cautious! If you're trading, make sure to track your P&L regularly. Stay on top of your performance with the [DexPNL Bot](https://t.me/dexpnl_bot). 
+Crypto trading can easily turn into uncontrollable gambling—stay cautious! If you're trading, make sure to track your P&L regularly. Stay on top of your performance with the [DexPNL Bot](https://github.com/henrytirla/DEX-PNL-BOT). 
 
 ## Service
 You can have this script ported to a telegram bot for  your personal use.  DM for setup
