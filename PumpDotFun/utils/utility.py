@@ -10,7 +10,6 @@ from PumpDotFun.utils.coin_data import get_coin_data
 import os
 
 from dotenv import load_dotenv
-from dotenv import load_dotenv
 
 
 # Load .env file explicitly from the root directory
