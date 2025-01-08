@@ -91,7 +91,6 @@ async def sell(solana_client, TOKEN_TO_SWAP_SELL, payer):
             amount_in = balance.value.amount
 
             print("Token Balance : ", amount_in)
-            break
 
             if int(amount_in) == 0:
                 return "NO BALANCE"
@@ -182,7 +181,7 @@ async def sell(solana_client, TOKEN_TO_SWAP_SELL, payer):
 
 async def main():
 
-    token_toSell="RUpbmGF6p42AAeN1QvhFReZejQry1cLkE1PUYFVVpnL"
+    token_toSell="3WdmE9BAHgVyB1JNswSUcj6RmkxnsvfJTd6RFnQ4pump"
     print(payer.pubkey())
     await sell(solana_client, token_toSell, payer)
 
