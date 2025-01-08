@@ -10,7 +10,8 @@ import os
 from dotenv import load_dotenv
 
 # Load.env file
-load_dotenv()
+# load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 RPC_HTTPS_URL= os.getenv("RPC_HTTPS_URL")
 # config = dotenv_values("Trade/.env")
@@ -38,6 +39,9 @@ TOKEN_PROGRAM_ID_2022: Pubkey = Pubkey.from_string(
 )
 
 RAY_V4 = Pubkey.from_string("675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8")
+PUMP_FUN_PROGRAM = Pubkey.from_string("6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P")
+PUMP_LIQUIDITY_MIGRATOR = Pubkey.from_string("39azUYFWPz3VHgKCf3VChUwbpURdCHRxjWVowf5jUJjg")
+
 RAY_AUTHORITY_V4 = Pubkey.from_string("5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1")
 
 OPEN_BOOK_PROGRAM = Pubkey.from_string("srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX")
@@ -45,20 +49,39 @@ OPEN_BOOK_PROGRAM = Pubkey.from_string("srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJ
 offset_base_mint = get_offset(AMM_INFO_LAYOUT_V4_1, 'coinMintAddress')
 offset_quote_mint = get_offset(AMM_INFO_LAYOUT_V4_1, 'pcMintAddress')
 
+
 LAMPORTS_PER_SOL = 1000000000
 # RPC_HTTPS_URL=config["RPC_HTTPS_URL"]
 
+def is_solana_address_pump(address):
+    address=str(address)
+    """
+    Check if the given Solana address ends with 'pump'.
 
+    :param address: The Solana address string to check.
+    :return: True if the address ends with 'pump', False otherwise.
+    """
+
+    return address.endswith('pump')
 
 async def getpoolIdByMint(mint, ctx):
-
     start_time = time.time()
-    memcmp_opts_base = MemcmpOpts(offset=offset_base_mint, bytes=bytes(mint))
+    pump_token=is_solana_address_pump(str(mint))
+    print(pump_token)
+    if pump_token:
+
+        memcmp_opts_base = MemcmpOpts(offset=432, bytes=str(mint))
+
+    else:
+        memcmp_opts_base = MemcmpOpts(offset=400, bytes=str(mint))
+        # print(memcmp_opts_base)
     filters_tokens = [memcmp_opts_base]
+
     while True:
         try:
             if time.time() - start_time > 5:
-                return False, False
+                return False
+
 
             poolids = (await ctx.get_program_accounts(pubkey=RAY_V4, commitment=Confirmed, encoding="jsonParsed",
                                                       filters=filters_tokens)).value
@@ -69,7 +92,12 @@ async def getpoolIdByMint(mint, ctx):
     if(len(poolids) > 0):
         return poolids[0].pubkey
     else:
-        return False
+        return None
+
+
+
+
+
 
 
 
