@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import sys
 import time
 from solana.rpc.types import TokenAccountOpts
 from solders.pubkey import Pubkey
@@ -13,8 +14,10 @@ from utils.birdeye import getSymbol
 from solana.transaction import Transaction
 from solana.rpc.async_api import AsyncClient
 from utils.pool_information import gen_pool, getpoolIdByMint
+from utils.create_close_account import fetch_pool_keys
 import os
 from dotenv import load_dotenv
+
 
 # Load.env file
 load_dotenv()
@@ -86,13 +89,15 @@ async def buy(solana_client, TOKEN_TO_SWAP_BUY, payer, amount):
 
                     fetch_pool_key = await gen_pool(str(tokenPool_ID), AsyncClient(RPC_HTTPS_URL, commitment=Confirmed))
                     pool_keys = fetch_pool_key
+                    print(pool_keys)
                 else:
                     print("AMMID NOT FOUND SEARCHING WILL BE FETCHING WITH RAYDIUM SDK")
-                    return
+
 
                     pool_keys = fetch_pool_keys(str(mint))
             except Exception as e:
                 print(e)
+            sys.exit(0)
             amount_in = int(amount * LAMPORTS_PER_SOL)
 
             swap_associated_token_address, swap_token_account_Instructions = get_token_account(solana_client, payer.pubkey(), mint)
@@ -161,8 +166,8 @@ async def buy(solana_client, TOKEN_TO_SWAP_BUY, payer, amount):
 
 async def main():
 
-    token_toBuy="RUpbmGF6p42AAeN1QvhFReZejQry1cLkE1PUYFVVpnL"
+    token_toBuy="3WdmE9BAHgVyB1JNswSUcj6RmkxnsvfJTd6RFnQ4pump"
     print(payer.pubkey())
-    await buy(solana_client, token_toBuy, payer, 0.001593837)
+    await buy(solana_client, token_toBuy, payer, 0.000065)
 
 asyncio.run(main())
