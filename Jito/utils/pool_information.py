@@ -53,6 +53,7 @@ async def getpoolIdByMint(mint, ctx):
 
     start_time = time.time()
     memcmp_opts_base = MemcmpOpts(offset=offset_base_mint, bytes=bytes(mint))
+    print(memcmp_opts_base)
     filters_tokens = [memcmp_opts_base]
     while True:
         try:

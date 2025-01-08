@@ -2,7 +2,7 @@ from spl.token.instructions import create_associated_token_account, get_associat
 from solders.pubkey import Pubkey
 from solders.instruction import Instruction
 from solana.rpc.types import TokenAccountOpts
-from solana.transaction import AccountMeta
+from solders.instruction import AccountMeta
 from WrapSol__PriorityFees.utils.layouts import SWAP_LAYOUT
 import json, requests
 LAMPORTS_PER_SOL = 1000000000

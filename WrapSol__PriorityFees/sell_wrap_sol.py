@@ -1,17 +1,19 @@
 import asyncio
 import datetime
 import time
-from solana.rpc.types import TokenAccountOpts
+from solana.rpc.types import TokenAccountOpts, TxOpts
+from solders.message import MessageV0
 from solders.pubkey import Pubkey
 from solana.rpc.commitment import Commitment, Confirmed
 from solana.rpc.api import RPCException
-from solana.rpc.api import Client, Keypair
+from solana.rpc.api import Client
+from solders.keypair import Keypair
+
 from solana.rpc.async_api import AsyncClient
 from solders.compute_budget import set_compute_unit_price,set_compute_unit_limit
-from solders.transaction import Transaction
-from utils.create_close_account import  fetch_pool_keys, get_token_account, make_swap_instruction ,sell_get_token_account
+from solders.transaction import  VersionedTransaction
+from utils.create_close_account import   get_token_account, make_swap_instruction ,sell_get_token_account
 from utils.birdeye import getSymbol
-from solana.transaction import Transaction
 from utils.pool_information import gen_pool, getpoolIdByMint
 import os
 from dotenv import load_dotenv
@@ -66,7 +68,7 @@ async def sell(solana_client, TOKEN_TO_SWAP_SELL, payer):
 
                 tokenPool_ID = await getpoolIdByMint(mint, AsyncClient(RPC_HTTPS_URL, commitment=Confirmed))
 
-                if tokenPool_ID is not False:
+                if tokenPool_ID:
 
                     fetch_pool_key = await gen_pool(str(tokenPool_ID), AsyncClient(RPC_HTTPS_URL, commitment=Confirmed))
                     pool_keys = fetch_pool_key
@@ -74,7 +76,6 @@ async def sell(solana_client, TOKEN_TO_SWAP_SELL, payer):
                 else:
                     print("AMMID NOT FOUND SEARCHING WILL BE FETCHING WITH RAYDIUM SDK.. THis happens")
 
-                    pool_keys= fetch_pool_keys(str(mint))
             except Exception as e:
                 print(e)
 
@@ -84,10 +85,13 @@ async def sell(solana_client, TOKEN_TO_SWAP_SELL, payer):
             opts = TokenAccountOpts(mint=mint)
             response = await async_solana_client.get_token_accounts_by_owner(payer.pubkey(), opts)
             tokenAccount = response.value[0].pubkey
-            balance = await async_solana_client.get_token_account_balance(tokenAccount)
+            balance = await async_solana_client.get_token_account_balance(tokenAccount, commitment=Confirmed)
+
 
             amount_in = balance.value.amount
+
             print("Token Balance : ", amount_in)
+            break
 
             if int(amount_in) == 0:
                 return "NO BALANCE"
@@ -106,14 +110,31 @@ async def sell(solana_client, TOKEN_TO_SWAP_SELL, payer):
                                                       payer
                                                       )
 
-            swap_tx = Transaction()
+            swap_tx = []
             if WSOL_token_account_Instructions != None:
-                swap_tx.add(WSOL_token_account_Instructions)
-            swap_tx.add(instructions_swap,set_compute_unit_price(498_750),set_compute_unit_limit(4_000_000))
+                swap_tx.append(WSOL_token_account_Instructions)
+
+            swap_tx.extend([instructions_swap,
+                            set_compute_unit_price(498_750),
+                            set_compute_unit_limit(4_000_000)])
+
+            print("Execute Transaction...")
+            compiled_message = MessageV0.try_compile(
+                payer.pubkey(),
+                swap_tx,
+                [],
+                solana_client.get_latest_blockhash().value.blockhash,
+            )
+            print("Sending transaction...")
+            txn = await async_solana_client.send_transaction(
+                txn=VersionedTransaction(compiled_message, [payer]),
+                opts=TxOpts(skip_preflight=True),
+            )
+            print("Transaction Signature:", txn.value)
 
 
-            print("5. Execute Transaction...")
-            txn = solana_client.send_transaction(swap_tx, payer)
+
+
             txid_string_sig = txn.value
 
             if txid_string_sig:

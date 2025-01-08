@@ -3,13 +3,15 @@ import asyncio
 import datetime
 import os
 from solana.rpc.commitment import Confirmed
+from solana.rpc.types import TxOpts
 from solders.keypair import Keypair
 from solana.rpc.async_api import AsyncClient
 from dotenv import load_dotenv
 from solana.rpc.api import Client
+from solders.message import MessageV0
+from solders.transaction import VersionedTransaction
 from spl.token.client import Token
 from spl.token.constants import TOKEN_PROGRAM_ID, WRAPPED_SOL_MINT
-from solana.transaction import Transaction
 from solders.compute_budget import set_compute_unit_price,set_compute_unit_limit
 
 import spl.token.instructions as spl_token
@@ -64,7 +66,7 @@ async def send_and_confirm_transaction(client, payer, max_attempts=3):
 
         try:
 
-            transaction = Transaction()
+            instructions=[]
             # Add close_account instruction to reclaim the rent-exempt reserve
             ix = spl_token.close_account(spl_token.CloseAccountParams(account=wallet_solToken_acc,
                                                   dest=payer.pubkey(),
@@ -73,10 +75,26 @@ async def send_and_confirm_transaction(client, payer, max_attempts=3):
 
 
 
-            transaction.add(ix,set_compute_unit_price(498_750),set_compute_unit_limit(4_000_000))
+            instructions.extend([ix,
+                                 set_compute_unit_price(498_750),
+                                 set_compute_unit_limit(4_000_000)
+                                 ])
 
             print("Execute Transaction...")
-            txn = await async_solana_client.send_transaction(transaction, payer)
+            # txn = await async_solana_client.send_transaction(transaction, payer)
+            compiled_message = MessageV0.try_compile(
+                payer.pubkey(),
+                instructions,
+                [],
+                client.get_latest_blockhash().value.blockhash,
+            )
+            print("Sending transaction...")
+            txn = await async_solana_client.send_transaction(
+                txn=VersionedTransaction(compiled_message, [payer]),
+                opts=TxOpts(skip_preflight=True),
+            )
+            print("Transaction Signature:", txn.value)
+            print(txn.value)
             txid_string_sig = txn.value
             if txid_string_sig:
                 print("Transaction sent")

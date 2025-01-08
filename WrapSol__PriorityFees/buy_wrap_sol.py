@@ -1,20 +1,20 @@
 import asyncio
 import datetime
-import sys
 import time
-from solana.rpc.types import TokenAccountOpts
+from solders.message import MessageV0
+from solders.transaction import  VersionedTransaction
+from solana.rpc.types import TokenAccountOpts, TxOpts
 from solders.pubkey import Pubkey
 from solana.rpc.commitment import  Confirmed
 from solana.rpc.api import RPCException
-from solana.rpc.api import Client, Keypair
+from solana.rpc.api import Client
+from solders.keypair import Keypair
 from solders.compute_budget import set_compute_unit_price,set_compute_unit_limit
-from solders.transaction import Transaction
+
 from utils.create_close_account import   get_token_account, make_swap_instruction
 from utils.birdeye import getSymbol
-from solana.transaction import Transaction
 from solana.rpc.async_api import AsyncClient
 from utils.pool_information import gen_pool, getpoolIdByMint
-from utils.create_close_account import fetch_pool_keys
 import os
 from dotenv import load_dotenv
 
@@ -26,6 +26,7 @@ load_dotenv()
 
 RPC_HTTPS_URL= os.getenv("RPC_HTTPS_URL")
 solana_client = Client(os.getenv("RPC_HTTPS_URL"))
+
 async_solana_client = AsyncClient(os.getenv("RPC_HTTPS_URL"))
 payer=Keypair.from_base58_string(os.getenv("PrivateKey"))
 Wsol_TokenAccount=os.getenv('WSOL_TokenAccount')
@@ -82,42 +83,57 @@ async def buy(solana_client, TOKEN_TO_SWAP_BUY, payer, amount):
             # mint= TOKEN_TO_SWAP_BUY
 
             try:
+                print("Fetching pool keys...")
+
 
                 tokenPool_ID = await getpoolIdByMint(mint, AsyncClient(RPC_HTTPS_URL, commitment=Confirmed))
-
-                if tokenPool_ID is not False:
+                print(tokenPool_ID)
+                if tokenPool_ID:
+                    print("AMMID FOUND")
 
                     fetch_pool_key = await gen_pool(str(tokenPool_ID), AsyncClient(RPC_HTTPS_URL, commitment=Confirmed))
                     pool_keys = fetch_pool_key
-                    print(pool_keys)
                 else:
                     print("AMMID NOT FOUND SEARCHING WILL BE FETCHING WITH RAYDIUM SDK")
 
 
-                    pool_keys = fetch_pool_keys(str(mint))
+                    #pool_keys = fetch_pool_keys(str(mint))
             except Exception as e:
                 print(e)
-            sys.exit(0)
+
+
             amount_in = int(amount * LAMPORTS_PER_SOL)
 
             swap_associated_token_address, swap_token_account_Instructions = get_token_account(solana_client, payer.pubkey(), mint)
-            swap_tx = Transaction()
+            swap_tx = []
             WSOL_token_account = Pubkey.from_string(Wsol_TokenAccount)
             instructions_swap = make_swap_instruction(amount_in, WSOL_token_account, swap_associated_token_address, pool_keys, mint, solana_client, payer)
             if swap_token_account_Instructions != None:
 
-                swap_tx.add(swap_token_account_Instructions)
+                swap_tx.append(swap_token_account_Instructions)
 
+            swap_tx.extend([instructions_swap,
+                            set_compute_unit_price(498_750),
+                            set_compute_unit_limit(4_000_000)])
 
-            swap_tx.add(instructions_swap,set_compute_unit_price(498_750),set_compute_unit_limit(4_000_000))
             #Do not edit Compute Unit Price and Compute Unit Limit if you have no idea what you are doing. Current test confirm txn in 1-5s
 
 
             # Execute Transaction
             print("Execute Transaction...")
-            txn = await async_solana_client.send_transaction(swap_tx, payer)
+            compiled_message = MessageV0.try_compile(
+                payer.pubkey(),
+                swap_tx,
+                [],
+                solana_client.get_latest_blockhash().value.blockhash,
+            )
+            print("Sending transaction...")
+            txn = await async_solana_client.send_transaction(
+                txn=VersionedTransaction(compiled_message, [payer]),
+                opts=TxOpts(skip_preflight=True),
+            )
+            print("Transaction Signature:", txn.value)
             txid_string_sig = txn.value
-            print(txid_string_sig)
             if txid_string_sig:
                 print("Transaction sent")
                 print(getTimestamp())
@@ -165,9 +181,11 @@ async def buy(solana_client, TOKEN_TO_SWAP_BUY, payer, amount):
     return False
 
 async def main():
+    #7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr
+    #RUpbmGF6p42AAeN1QvhFReZejQry1cLkE1PUYFVVpnL
 
     token_toBuy="3WdmE9BAHgVyB1JNswSUcj6RmkxnsvfJTd6RFnQ4pump"
     print(payer.pubkey())
-    await buy(solana_client, token_toBuy, payer, 0.000065)
+    await buy(solana_client, token_toBuy, payer, 0.00065)
 
 asyncio.run(main())

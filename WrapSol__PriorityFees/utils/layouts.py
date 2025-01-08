@@ -15,7 +15,7 @@ from solders.pubkey import Pubkey
 from solders.instruction import Instruction
 
 from solana.rpc.types import TokenAccountOpts
-from solana.transaction import AccountMeta
+from solders.instruction import AccountMeta
 
 
 class MyEncoder(json.JSONEncoder):
