@@ -12,6 +12,9 @@ This repository provides a comprehensive guide and implementation for interactin
 This repository serves as a practical resource for developers looking to automate their interactions with the Raydium DEX and manage their Solana accounts programmatically.
 
 
+## 🚀Recomended folder to trade with is Wrapsol_Priorityfees
+
+
 ## Install Requirements 
 
 ```bash
