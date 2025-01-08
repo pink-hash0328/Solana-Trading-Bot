@@ -3,6 +3,8 @@
 
 This repository provides a comprehensive guide and implementation for interacting with the Raydium DEX on the Solana blockchain using the Solana-py SDK. It includes scripts and utilities for trading SPL tokens, managing SOL and SPL token accounts, and optimizing your wallet space by reclaiming unused account fees.
 
+
+
 ## Features
 - **Buy and Sell SPL Tokens:** Seamlessly trade SPL tokens on the Raydium DEX using the Solana-py SDK.
 - **Wrap and Unwrap SOL:** Convert SOL to Wrapped SOL (WSOL) and vice versa for use in SPL token transactions.
@@ -12,7 +14,6 @@ This repository provides a comprehensive guide and implementation for interactin
 This repository serves as a practical resource for developers looking to automate their interactions with the Raydium DEX and manage their Solana accounts programmatically.
 
 
-## 🚀Recomended folder to trade with is Wrapsol_Priorityfees
 
 
 ## Install Requirements 
