@@ -10,7 +10,7 @@ This repository provides a comprehensive guide and implementation for interactin
 - **Wrap and Unwrap SOL:** Convert SOL to Wrapped SOL (WSOL) and vice versa for use in SPL token transactions.
 - **Close Token Accounts:** Reclaim the SOL used as rent for token accounts by securely closing unused SOL and SPL token accounts.
 - **Integrate with Jito:** Leverage Jito for optimized MEV (Maximal Extractable Value) to maximize your trading strategies on Solana.
-- ** Pumpdot Fun tokens supported.
+- **PumpdotFun tokens supported.
 
 This repository serves as a practical resource for developers looking to automate their interactions with the Raydium DEX and manage their Solana accounts programmatically.
 
