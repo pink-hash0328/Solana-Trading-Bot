@@ -1,7 +1,7 @@
 
 #  Solana Trading Bot
 
-This repository provides a comprehensive guide and implementation for interacting with the Raydium DEX on the Solana blockchain using the Solana-py SDK. It includes scripts and utilities for trading SPL tokens, managing SOL and SPL token accounts, and optimizing your wallet space by reclaiming unused account fees.
+This repository provides a comprehensive guide and implementation for interacting with the Raydium DEX and Pump.fun on the Solana blockchain using the Solana-py SDK. It includes scripts and utilities for trading SPL tokens, managing SOL and SPL token accounts, and optimizing your wallet space by reclaiming unused account fees.
 
 
 
