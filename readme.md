@@ -40,5 +40,4 @@ If these scripts have helped you, please consider supporting my work. Your suppo
 - 🤑 Fiat Donations: [Paypal Link](https://paypal.me/HenryTirla)
 - 🚀 henrytirla.sol:   FJRDY392XSyfV9nFZC8SZij1hB3hsH121pCQi1KrvH6b
 
-******Jito has gone through lots of updates. Updated scripts coming soon******
 
