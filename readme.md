@@ -11,7 +11,7 @@ This repository provides a comprehensive guide and implementation for interactin
 - **Close Token Accounts:** Reclaim the SOL used as rent for token accounts by securely closing unused SOL and SPL token accounts.
 - **Integrate with Jito:** Leverage Jito for optimized MEV (Maximal Extractable Value) to maximize your trading strategies on Solana.
 - **PumpDotFun** tokens supported.
-- - **Pool keys** Get pool keys at constant time without raydium sdk.
+- **Pool keys** Get pool keys at constant time without raydium sdk.
 
 
 This repository serves as a practical resource for developers looking to automate their interactions with the Raydium DEX and manage their Solana accounts programmatically.
