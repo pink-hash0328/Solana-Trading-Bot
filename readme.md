@@ -21,9 +21,13 @@ This repository serves as a practical resource for developers looking to automat
 
 ## Install Requirements 
 
+1. Rename the `.env.template` file to `.env`:
+
 ```bash
 pip install requirements.txt
-``` 
+```
+
+
 
 ## Recommendations 
 You can trade with code in the WrapSol__priorityfees folder. Wrap your sol first and leave a certain amout of sol to pay for gas fees.
