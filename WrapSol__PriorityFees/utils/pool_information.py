@@ -1,3 +1,5 @@
+import asyncio
+
 import base58
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.types import MemcmpOpts
@@ -67,7 +69,6 @@ def is_solana_address_pump(address):
 async def getpoolIdByMint(mint, ctx):
     start_time = time.time()
     pump_token=is_solana_address_pump(str(mint))
-    print(pump_token)
     if pump_token:
 
         memcmp_opts_base = MemcmpOpts(offset=432, bytes=str(mint))
@@ -85,7 +86,7 @@ async def getpoolIdByMint(mint, ctx):
 
             poolids = (await ctx.get_program_accounts(pubkey=RAY_V4, commitment=Confirmed, encoding="jsonParsed",
                                                       filters=filters_tokens)).value
-            # print(poolids)
+            print(poolids)
             break
         except :
             pass
@@ -96,8 +97,11 @@ async def getpoolIdByMint(mint, ctx):
 
 
 
-
-
+# async def main():
+#    c= await getpoolIdByMint("3WdmE9BAHgVyB1JNswSUcj6RmkxnsvfJTd6RFnQ4pump", AsyncClient(RPC_HTTPS_URL, commitment=Confirmed))
+#    print(c)
+#
+# asyncio.run(main())
 
 
 

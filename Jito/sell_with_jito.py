@@ -21,7 +21,8 @@ from solana.rpc.types import TokenAccountOpts
 from solders.pubkey import Pubkey
 from solana.rpc.commitment import Commitment, Confirmed
 from solana.rpc.api import RPCException
-from solana.rpc.api import Client, Keypair
+from solana.rpc.api import Client
+from solders.keypair import Keypair
 from solders.compute_budget import set_compute_unit_price, set_compute_unit_limit
 from solders.transaction import Transaction
 from utils.create_close_account import fetch_pool_keys, get_token_account, make_swap_instruction
