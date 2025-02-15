@@ -22,7 +22,8 @@ from solana.rpc.types import TokenAccountOpts
 from solders.pubkey import Pubkey
 from solana.rpc.commitment import Commitment, Confirmed
 from solana.rpc.api import RPCException
-from solana.rpc.api import Client, Keypair
+from solana.rpc.api import Client
+from solders.keypair import Keypair
 from solders.compute_budget import set_compute_unit_price,set_compute_unit_limit
 from solders.transaction import Transaction
 from utils.create_close_account import  fetch_pool_keys, get_token_account, make_swap_instruction
@@ -116,14 +117,15 @@ async def buy(solana_client, TOKEN_TO_SWAP_BUY, payer, amount):
             amount_in = int(amount * LAMPORTS_PER_SOL)
 
             swap_associated_token_address, swap_token_account_Instructions = get_token_account(solana_client, payer.pubkey(), mint)
-            swap_tx = Transaction()
+            swap_tx = []
+
             WSOL_token_account = Pubkey.from_string(Wsol_TokenAccount)
             instructions_swap = make_swap_instruction(amount_in, WSOL_token_account, swap_associated_token_address, pool_keys, mint, solana_client, payer)
             if swap_token_account_Instructions != None:
 
-                swap_tx.add(swap_token_account_Instructions)
+                swap_tx.append(swap_token_account_Instructions)
 
-            swap_tx.add(instructions_swap, set_compute_unit_price(25_232), set_compute_unit_limit(200_337))
+            swap_tx.extend([instructions_swap, set_compute_unit_price(25_232), set_compute_unit_limit(200_337)])
 
             ###SENDING THROUGH JITO
             print("Sending Through Jito")
@@ -154,17 +156,25 @@ async def buy(solana_client, TOKEN_TO_SWAP_BUY, payer, amount):
                     lamports=int(0.00020002 * LAMPORTS_PER_SOL)  #TIP AMOUNT
                 )
             )
+            swap_tx.append(ix)
 
-            block_hash = solana_client.get_latest_blockhash(commitment=Confirmed)
-
-            print(block_hash.value.blockhash)
+            # block_hash = solana_client.get_latest_blockhash(commitment=Confirmed)
+            #
+            # print(block_hash.value.blockhash)
 
             msg = MessageV0.try_compile(
-                payer=payer.pubkey(),
-                instructions=[swap_tx.instructions[0], swap_tx.instructions[1], swap_tx.instructions[2], ix],
-                address_lookup_table_accounts=[],
-                recent_blockhash=block_hash.value.blockhash,
+                payer.pubkey(),
+                swap_tx,
+                [],
+                solana_client.get_latest_blockhash().value.blockhash,
             )
+
+            # msg = MessageV0.try_compile(
+            #     payer=payer.pubkey(),
+            #     instructions=[swap_tx.instructions[0], swap_tx.instructions[1], swap_tx.instructions[2], ix],
+            #     address_lookup_table_accounts=[],
+            #     recent_blockhash=block_hash.value.blockhash,
+            # )
 
             tx1 = VersionedTransaction(msg, [payer])
 
@@ -218,6 +228,6 @@ async def main():
 
     token_toBuy="RUpbmGF6p42AAeN1QvhFReZejQry1cLkE1PUYFVVpnL"
     print(payer.pubkey())
-    await buy(solana_client, token_toBuy, payer, 0.0012593837)
+    await buy(solana_client, token_toBuy, payer, 0.01008572)
 
 asyncio.run(main())

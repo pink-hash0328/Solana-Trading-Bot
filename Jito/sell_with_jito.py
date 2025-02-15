@@ -6,16 +6,11 @@ from jito_searcher_client import get_async_searcher_client
 from jito_searcher_client.convert import tx_to_protobuf_packet, versioned_tx_to_protobuf_packet
 from jito_searcher_client.generated.bundle_pb2 import Bundle
 from jito_searcher_client.generated.searcher_pb2 import (
-    ConnectedLeadersRequest,
-    MempoolSubscription,
+
     NextScheduledLeaderRequest,
     NextScheduledLeaderResponse,
-    ProgramSubscriptionV0,
     SendBundleRequest,
-    SendBundleResponse,
-    # SubscribeBundleResults
 
-    WriteLockedAccountSubscriptionV0,
 )
 from solana.rpc.types import TokenAccountOpts
 from solders.pubkey import Pubkey
@@ -24,10 +19,8 @@ from solana.rpc.api import RPCException
 from solana.rpc.api import Client
 from solders.keypair import Keypair
 from solders.compute_budget import set_compute_unit_price, set_compute_unit_limit
-from solders.transaction import Transaction
 from utils.create_close_account import fetch_pool_keys, get_token_account, make_swap_instruction
 from utils.birdeye import getSymbol
-from solana.transaction import Transaction
 from solana.rpc.async_api import AsyncClient
 from solders.transaction import VersionedTransaction
 from solders.message import MessageV0
@@ -93,6 +86,7 @@ async def sell(solana_client, TOKEN_TO_SWAP_SELL, payer):
         try:
             token_symbol, SOl_Symbol = getSymbol(TOKEN_TO_SWAP_SELL)
             mint = Pubkey.from_string(TOKEN_TO_SWAP_SELL)
+            pool_keys=None
 
             # mint= TOKEN_TO_SWAP_SELL
             sol = Pubkey.from_string("So11111111111111111111111111111111111111112")
@@ -120,21 +114,21 @@ async def sell(solana_client, TOKEN_TO_SWAP_SELL, payer):
             opts = TokenAccountOpts(mint=mint)
             response = await async_solana_client.get_token_accounts_by_owner(payer.pubkey(), opts)
             tokenAccount = response.value[0].pubkey
+            print(tokenAccount)
             balance = await async_solana_client.get_token_account_balance(tokenAccount)
 
-            amount_in = balance.value.amount
+            amount_in = int(balance.value.amount)
             print("Token Balance : ", amount_in)
 
             if int(amount_in) == 0:
                 return "NO BALANCE"
 
 
-            swap_token_account = sell_get_token_account(solana_client, payer.pubkey(), mint)
             WSOL_token_account, WSOL_token_account_Instructions = get_token_account(solana_client, payer.pubkey(), sol)
 
             print("3. Create Swap Instructions...")
             instructions_swap = make_swap_instruction(amount_in,
-                                                      swap_token_account,
+                                                      tokenAccount,
                                                       WSOL_token_account,
                                                       pool_keys,
                                                       mint,
@@ -142,18 +136,17 @@ async def sell(solana_client, TOKEN_TO_SWAP_SELL, payer):
                                                       payer
                                                       )
 
-            swap_tx = Transaction()
+            swap_tx = []
             if WSOL_token_account_Instructions != None:
-                swap_tx.add(WSOL_token_account_Instructions)
-            swap_tx.add(instructions_swap,set_compute_unit_price(25_500),set_compute_unit_limit(200_337))
+                swap_tx.append(WSOL_token_account_Instructions)
+            swap_tx.extend([instructions_swap,set_compute_unit_price(25_500),set_compute_unit_limit(200_337)])
 
             ###SENDING THROUGH JITO
             print("Sending Through Jito")
 
             jito_payer = Keypair.from_base58_string(os.getenv("JITO_PRIVATE_KEY"))
             BLOCK_ENGINE_URL = "frankfurt.mainnet.block-engine.jito.wtf"
-            # jito_client=  get_searcher_client(BLOCK_ENGINE_URL,jito_payer)
-            jito_client = await get_async_searcher_client(BLOCK_ENGINE_URL, jito_payer)
+            jito_client = await get_async_searcher_client(BLOCK_ENGINE_URL, jito_payer) #Update this line to avoid rate limit due to private key of jito Auth been made available publicly here.
             txs = []
             tip_account_pubkey = Pubkey.from_string(os.getenv("TIP_ACCOUNT_PUBKEY"))
 
@@ -176,17 +169,15 @@ async def sell(solana_client, TOKEN_TO_SWAP_SELL, payer):
                     lamports=int(0.00020002 * LAMPORTS_PER_SOL)  # TIP AMOUNT
                 )
             )
-
-            block_hash = solana_client.get_latest_blockhash(commitment=Confirmed)
-
-            print(block_hash.value.blockhash)
+            swap_tx.append(ix)
 
             msg = MessageV0.try_compile(
-                payer=payer.pubkey(),
-                instructions=[swap_tx.instructions[0], swap_tx.instructions[1], swap_tx.instructions[2], ix],
-                address_lookup_table_accounts=[],
-                recent_blockhash=block_hash.value.blockhash,
+                payer.pubkey(),
+                swap_tx,
+                [],
+                solana_client.get_latest_blockhash().value.blockhash,
             )
+
 
             tx1 = VersionedTransaction(msg, [payer])
 
