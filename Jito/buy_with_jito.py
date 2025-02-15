@@ -3,32 +3,27 @@ import datetime
 import time
 
 from jito_searcher_client import get_async_searcher_client
-from jito_searcher_client.convert import tx_to_protobuf_packet, versioned_tx_to_protobuf_packet
+from jito_searcher_client.convert import  versioned_tx_to_protobuf_packet
 from jito_searcher_client.generated.bundle_pb2 import Bundle
 from jito_searcher_client.generated.searcher_pb2 import (
-    ConnectedLeadersRequest,
-    MempoolSubscription,
+
     NextScheduledLeaderRequest,
     NextScheduledLeaderResponse,
-    ProgramSubscriptionV0,
     SendBundleRequest,
-    SendBundleResponse,
-    # SubscribeBundleResults
 
 
-    WriteLockedAccountSubscriptionV0,
+
+
 )
 from solana.rpc.types import TokenAccountOpts
 from solders.pubkey import Pubkey
-from solana.rpc.commitment import Commitment, Confirmed
+from solana.rpc.commitment import  Confirmed
 from solana.rpc.api import RPCException
 from solana.rpc.api import Client
 from solders.keypair import Keypair
 from solders.compute_budget import set_compute_unit_price,set_compute_unit_limit
-from solders.transaction import Transaction
 from utils.create_close_account import  fetch_pool_keys, get_token_account, make_swap_instruction
 from utils.birdeye import getSymbol
-from solana.transaction import Transaction
 from solana.rpc.async_api import AsyncClient
 from solders.transaction import VersionedTransaction
 from solders.message import MessageV0
@@ -158,9 +153,7 @@ async def buy(solana_client, TOKEN_TO_SWAP_BUY, payer, amount):
             )
             swap_tx.append(ix)
 
-            # block_hash = solana_client.get_latest_blockhash(commitment=Confirmed)
-            #
-            # print(block_hash.value.blockhash)
+
 
             msg = MessageV0.try_compile(
                 payer.pubkey(),
@@ -169,12 +162,7 @@ async def buy(solana_client, TOKEN_TO_SWAP_BUY, payer, amount):
                 solana_client.get_latest_blockhash().value.blockhash,
             )
 
-            # msg = MessageV0.try_compile(
-            #     payer=payer.pubkey(),
-            #     instructions=[swap_tx.instructions[0], swap_tx.instructions[1], swap_tx.instructions[2], ix],
-            #     address_lookup_table_accounts=[],
-            #     recent_blockhash=block_hash.value.blockhash,
-            # )
+
 
             tx1 = VersionedTransaction(msg, [payer])
 

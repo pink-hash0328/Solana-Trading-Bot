@@ -14,7 +14,7 @@ from jito_searcher_client.generated.searcher_pb2 import (
 )
 from solana.rpc.types import TokenAccountOpts
 from solders.pubkey import Pubkey
-from solana.rpc.commitment import Commitment, Confirmed
+from solana.rpc.commitment import  Confirmed
 from solana.rpc.api import RPCException
 from solana.rpc.api import Client
 from solders.keypair import Keypair
